@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import './Login.css'
 
-const SignIn = () => {
+const Login = () => {
 
     const [trans, setTrans] = useState(false);
     const [formData, setFormData] = useState({})
@@ -93,4 +93,4 @@ const SignIn = () => {
     )
 }
 
-export default SignIn
+export default Login
