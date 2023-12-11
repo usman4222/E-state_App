@@ -1,9 +1,10 @@
 const { User } = require("../Models/UserModel");
-const bcryptjs = require("bcryptjs")
+const bcryptjs = require("bcryptjs");
+const { errorHandler } = require("../utils/Error");
+const jwt = require("jsonwebtoken")
 
-
-//user sign-Up
-exports.signup = async (req, res, next) => {
+//user register
+exports.register = async (req, res, next) => {
     try {
         const { username, email, password } = req.body;
         //convert password into hash
@@ -23,3 +24,41 @@ exports.signup = async (req, res, next) => {
 };
 
 
+//user login
+
+exports.login = async (req, res, next) => {
+
+    const { email, password } = req.body
+
+    try {
+        const validUser = await User.findOne({ email });
+
+        if (!validUser) {
+            return (
+                errorHandler(404, "User Not Found!")
+            )
+        }
+        const validPassword = bcryptjs.compareSync(password, validUser.password)
+        if (!validPassword) {
+            return (
+                errorHandler(404, "User Not Found!")
+            )
+        }
+        const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET)
+
+        const {password: pass, ...rest} = validUser._doc
+
+        const expirationDate = new Date();
+        expirationDate.setDate(expirationDate.getDate() + 3);
+
+        res.cookie('access_token', token, {
+            httpOnly: true,
+            expirationDate
+        })
+            .status(200)
+            .json(rest)
+
+    } catch (error) {
+        next(error)
+    }
+}
