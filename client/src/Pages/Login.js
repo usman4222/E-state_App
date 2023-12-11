@@ -1,10 +1,15 @@
 import React, { useState } from 'react'
 import './Login.css'
+import { useAlert } from 'react-alert'
 
 const Login = () => {
 
     const [trans, setTrans] = useState(false);
     const [formData, setFormData] = useState({})
+    const [error, setError] = useState(null)
+    const [loading, setLoading] = useState(false)
+    const alert = useAlert()
+
 
     const regClick = () => {
         setTrans(true);
@@ -14,25 +19,40 @@ const Login = () => {
         setTrans(false);
     };
 
-    const handleChange = (e) =>{
-       setFormData({
-        ...formData,
-        [e.target.value]: e.target.value
-       })
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.id]: e.target.value
+        })
     }
-    // console.log(formData)
     const handleSubmit = async (e) => {
         e.preventDefault()
-        const res = await fetch('http://localhost:4000/api/auth/signup', 
-        {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        })
-        const data = await res.json()
-        console.log(data)
+        try {
+            setLoading(true)
+            const res = await fetch('http://localhost:4000/api/auth/signup',
+                {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                })
+            const data = await res.json()
+            console.log(data)
+            if (data.success === false) {
+                setLoading(false)
+                setError(error.message)
+                return
+            }
+            setLoading(false)
+            setError(null)
+            alert.success("User Created Successfully...")
+            setTrans(false);
+        } catch (error) {
+            setLoading(false)
+            setError(error.message)
+            alert.error(error.message)
+        }
     }
 
     return (
@@ -59,35 +79,36 @@ const Login = () => {
                 <div className={`register ${trans ? 'transformed' : ''}`} onClick={regClick}>
                     <form onSubmit={handleSubmit}>
                         <h2>Register</h2>
-                        <input 
-                        type='text' 
-                        id='username' 
-                        name='username'
-                        placeholder='Username' 
-                        onChange={handleChange}
-                        required 
+                        <input
+                            type='text'
+                            id='username'
+                            name='username'
+                            placeholder='Username'
+                            onChange={handleChange}
+                            required
                         />
-                        <input 
-                        type='email' 
-                        id='email'
-                        name='email'
-                        placeholder='Email' 
-                        onChange={handleChange}
-                        required 
+                        <input
+                            type='email'
+                            id='email'
+                            name='email'
+                            placeholder='Email'
+                            onChange={handleChange}
+                            required
                         />
-                        <input 
-                        type='password' 
-                        id='password'
-                        name='password'
-                        placeholder='Password' 
-                        onChange={handleChange}
-                        required 
+                        <input
+                            type='password'
+                            id='password'
+                            name='password'
+                            placeholder='Password'
+                            onChange={handleChange}
+                            required
                         />
                         <div className='submitBtn'>
-                            <button>Register</button>
+                            <button type='submit'>{loading ? "Loading..." : "Register"}</button>
                         </div>
                     </form>
                 </div>
+
             </div>
         </div>
     )
