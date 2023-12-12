@@ -2,15 +2,18 @@ import React, { useState } from 'react'
 import './Login.css'
 import { useAlert } from 'react-alert'
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginStart, loginSuccess, loginFailure } from '../Redux/User/userSlice';
+
 
 const Login = () => {
 
     const [trans, setTrans] = useState(false);
     const [formData, setFormData] = useState({})
-    const [error, setError] = useState(null)
-    const [loading, setLoading] = useState(false)
+    const { loading, error } = useSelector((state) => state.user)
     const alert = useAlert()
     const navigate = useNavigate()
+    const dispatch = useDispatch()
 
 
     const regClick = () => {
@@ -38,7 +41,8 @@ const Login = () => {
     const registerSubmitHandler = async (e) => {
         e.preventDefault();
         try {
-            setLoading(true);
+            // setLoading(true);
+                // dispatch(registerStart())
             const res = await fetch('http://localhost:4000/api/auth/register', {
                 method: "POST",
                 headers: {
@@ -48,17 +52,16 @@ const Login = () => {
             });
             const data = await res.json();
             if (data.success === false) {
-                setLoading(false);
-                setError(data.message);
+                // setLoading(false);
+                // dispatch(registerFailure(data.message))
                 return;
             }
-            setLoading(false);
-            setError(null);
+            // setLoading(false);
+            // dispatch(registerSuccess(data))
             alert.success("User Created Successfully...");
             setTrans(false);
         } catch (error) {
-            setLoading(false);
-            setError(error.message);
+            // dispatch(registerFailure(error.message))
             alert.error(error.message);
         }
     };
@@ -68,7 +71,8 @@ const Login = () => {
     const loginSubmitHandler = async (e) => {
         e.preventDefault();
         try {
-            setLoading(true);
+            // setLoading(true);
+            dispatch(loginStart())
             const loginData = {
                 email: formData.loginUsername,
                 password: formData.loginPassword
@@ -84,18 +88,22 @@ const Login = () => {
 
             const data = await res.json();
             if (data.success === false) {
-                setLoading(false);
-                setError(data.message);
+                // setLoading(false);
+                dispatch(loginFailure(error.message))
+                console.log("this is error for login loading", error)
                 return;
             }
-            setLoading(false);
-            setError(null);
+            // setLoading(false);
+            // setError(null);
+            dispatch(loginSuccess(data))
             alert.success("User Logged In Successfully...");
             navigate("/");
         } catch (error) {
-            setLoading(false);
-            setError(error.message);
+            // setLoading(false);
+            // setError(error.message);
+            dispatch(loginFailure(error.message))
             alert.error(error.message);
+            console.log("this is error for loading", error)
         }
     };
 
@@ -108,9 +116,9 @@ const Login = () => {
                         <h2 className={trans ? 'scaleDown' : ''}>Log In</h2>
                         <input
                             type='text'
-                            placeholder='Username'
+                            placeholder='Email'
                             onChange={loginChangeHandler}
-                            id='loginUsername'
+                            id='loginEmail'
                             required
                         />
                         <input
